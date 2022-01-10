@@ -1,0 +1,21 @@
+Date,Name,Amount,Category,Tags
+12/09/2021,Transaction1,12.31,"Restaurants"
+12/13/2021,Transaction2,2.50,"Restaurants"
+12/13/2021,Transaction3,16.23,"Restaurants"
+12/15/2021,Transaction4,9.15,"Restaurants"
+12/15/2021,Transaction5,22.06,"Shopping"
+12/16/2021,Transaction6,21.64,"Merchandise"
+12/16/2021,Transaction7,11.52,"Restaurants"
+12/17/2021,Transaction8,37.89,"Clothing"
+12/22/2021,Transaction9,13.25,"Shopping"
+12/22/2021,Transaction10,0.93,"Shopping"
+12/22/2021,Transaction11,44.84,"Merchandise"
+12/22/2021,Transaction12,43.27,"Home Improvement"
+12/22/2021,Transaction13,16.96
+12/23/2021,Transaction14,62.24
+12/27/2021,Transaction15,43.29
+12/31/2021,Transaction16,32.46
+12/28/2021,Transaction17,15.48
+12/31/2021,Transaction18,12.54
+01/01/2022,Transaction19,15.07
+01/01/2022,Transaction20,-32.46
