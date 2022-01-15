@@ -18,9 +18,18 @@ for file in downloads:
         cashplus_path = import_dir + file
     elif "Discover" in file:
         discover_path = import_dir + file
+    else:
+        customcash_path = import_dir + file
 
 prev_comb_path = "combined.csv"
 prev_comb = pd.read_csv(prev_comb_path)
+
+# Custom Cash Cleanup
+os.rename(customcash_path, "customcash.csv")
+customcash_path = "customcash.csv"
+customcash = pd.read_csv(customcash_path)
+
+print(Customcash)
 
 # Altitude Cleanup
 os.rename(altitude_path, "altitude.csv")
@@ -51,6 +60,8 @@ cashplus["Amount"] = cashplus["Amount"] * -1
 cashplus["Category"] = ""
 cashplus["Card"] = "USbank CashPlus"
 
+
+"""
 # combine 
 comb = altitude.append(cashplus).append(discover)
 
@@ -85,3 +96,4 @@ prev_comb.to_csv(prev_comb_path, quoting = csv.QUOTE_NONNUMERIC, index = False)
 #os.remove(altitude_path)
 #os.remove(cashplus_path)
 #os.remove(discover_path)
+"""
