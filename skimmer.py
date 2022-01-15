@@ -27,9 +27,10 @@ prev_comb = pd.read_csv(prev_comb_path)
 # Custom Cash Cleanup
 os.rename(customcash_path, "customcash.csv")
 customcash_path = "customcash.csv"
-customcash = pd.read_csv(customcash_path)
+customcash = pd.read_csv(customcash_path, skiprows = 5)
+customcash["Date"] = pd.to_datetime(customcash["Date"])
 
-print(Customcash)
+print(customcash)
 
 # Altitude Cleanup
 os.rename(altitude_path, "altitude.csv")
@@ -42,8 +43,8 @@ altitude["Category"] = "Restaurants"
 altitude["Card"] = "USbank Altitude"
 
 # Discover Cleanup
-discover_path = "discover.csv"
 os.rename(discover_path, "discover.csv")
+discover_path = "discover.csv"
 discover = pd.read_csv(discover_path)
 discover.drop(columns = "Post Date", inplace = True)
 discover.rename(columns = {"Trans. Date":"Date", "Description":"Name"}, inplace = True)
@@ -59,6 +60,8 @@ cashplus = cashplus[~(cashplus["Name"].str.contains("THANK YOU"))]
 cashplus["Amount"] = cashplus["Amount"] * -1
 cashplus["Category"] = ""
 cashplus["Card"] = "USbank CashPlus"
+
+print(altitude)
 
 
 """
