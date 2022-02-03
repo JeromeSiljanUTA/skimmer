@@ -24,57 +24,71 @@ for file in downloads:
 prev_comb_path = "combined.csv"
 prev_comb = pd.read_csv(prev_comb_path)
 
-# Custom Cash Cleanup
-os.rename(customcash_path, "customcash.csv")
-customcash_path = "customcash.csv"
-customcash = pd.read_csv(customcash_path, skiprows = 5)
-customcash["Date"] = pd.to_datetime(customcash["Date"])
+# CustomCash Cleanup
+#os.rename(customcash_path, "customcash.csv")
+#customcash_path = "customcash.csv"
+customcash = pd.read_csv(customcash_path)
 
-print(customcash)
+customcash["Date"] = pd.to_datetime(customcash["Date"]).dt.date
+customcash["Debit"].fillna(customcash.Credit, inplace = True)
+customcash["Category"] = "Gas Stations"
+customcash["Tags"] = ""
+customcash["Card"] = "Citi Custom Cash"
+customcash = (customcash.drop(columns = ["Credit", "Status"])
+        .rename(columns = {"Description":"Name", "Debit":"Amount"})
+     )
 
 # Altitude Cleanup
-os.rename(altitude_path, "altitude.csv")
-altitude_path = "altitude.csv"
-altitude = pd.read_csv(altitude_path)
-altitude.drop(columns = ["Memo", "Transaction"], inplace = True)
+#os.rename(altitude_path, "altitude.csv")
+#altitude_path = "altitude.csv"
+
+altitude = pd.read_csv(altitude_path, usecols = ["Amount", "Name", "Date"])
+altitude["Date"] = pd.to_datetime(altitude["Date"]).dt.date
 altitude = altitude[~(altitude["Name"].str.contains("THANK YOU"))]
 altitude["Amount"] = altitude["Amount"] * -1
 altitude["Category"] = "Restaurants"
+altitude["Tags"] = ""
 altitude["Card"] = "USbank Altitude"
 
-# Discover Cleanup
-os.rename(discover_path, "discover.csv")
-discover_path = "discover.csv"
-discover = pd.read_csv(discover_path)
-discover.drop(columns = "Post Date", inplace = True)
-discover.rename(columns = {"Trans. Date":"Date", "Description":"Name"}, inplace = True)
-discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
-discover["Card"] = "Discover It"
-
 # CashPlus Cleanup
-os.rename(cashplus_path, "cashplus.csv")
-cashplus_path = "cashplus.csv"
-cashplus = pd.read_csv(cashplus_path)
-cashplus.drop(columns = ["Memo", "Transaction"], inplace = True)
+#os.rename(cashplus_path, "cashplus.csv")
+#cashplus_path = "cashplus.csv"
+cashplus = pd.read_csv(cashplus_path, usecols = ["Amount", "Name", "Date"])
+cashplus["Date"] = pd.to_datetime(cashplus["Date"]).dt.date
 cashplus = cashplus[~(cashplus["Name"].str.contains("THANK YOU"))]
 cashplus["Amount"] = cashplus["Amount"] * -1
 cashplus["Category"] = ""
+cashplus["Tags"] = ""
 cashplus["Card"] = "USbank CashPlus"
 
-print(altitude)
+# Discover Cleanup
+#os.rename(discover_path, "discover.csv")
+#discover_path = "discover.csv"
+discover = (pd.read_csv(discover_path, usecols = ["Trans. Date", "Amount", "Description", "Category"])
+              .rename(columns = {"Trans. Date":"Date", "Description":"Name"})
+            )
+discover["Date"] = pd.to_datetime(discover["Date"]).dt.date
+discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
+altitude["Tags"] = ""
+discover["Card"] = "Discover It"
 
-
-"""
 # combine 
-comb = altitude.append(cashplus).append(discover)
-
-comb["Date"] = pd.to_datetime(comb["Date"])
+comb = altitude.append(cashplus).append(discover).append(customcash)
 comb.sort_values("Date", inplace = True)
 comb.reset_index(drop = True, inplace = True)
 
-
+# unique
 unique = comb.append(prev_comb)
+unique["Date"] = pd.to_datetime(unique["Date"]).dt.date
+unique.sort_values("Date", inplace = True)
 unique = comb.drop_duplicates(subset = ["Date", "Amount"], keep = False)
+unique.reset_index(drop = True, inplace = True)
+
+print(unique)
+
+#unique.to_csv("newcomb.csv")
+
+"""
 
 prev_comb = unique.append(mom_comb)
 
