@@ -12,9 +12,9 @@ reports_path = "reports/"
 downloads = os.listdir(import_dir)
 
 for file in downloads:
-    if "4808" in file:
+    if "3978" in file:
         altitude_path = import_dir + file
-    elif "5100" in file:
+    elif "4859" in file:
         cashplus_path = import_dir + file
     elif "Discover" in file:
         discover_path = import_dir + file
