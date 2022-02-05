@@ -9,4 +9,4 @@ This script pulls data from csv files downloaded from my credit cards' websites 
 ## Usage
  - Load raw csv files in `tmp/`
  - Run with `python skimmer.py`
- - Reports are stored in `reports/`
+ - Store old reports in `prev.csv`

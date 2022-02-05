@@ -6,10 +6,28 @@ import datetime
 
 date_time = datetime.datetime.now()
 
+# Grabbing Files
+import_dir = "tmp/"
+reports_path = "reports/"
+downloads = os.listdir(import_dir)
+
+for file in downloads:
+    if "4808" in file:
+        altitude_path = import_dir + file
+    elif "5100" in file:
+        cashplus_path = import_dir + file
+    elif "Discover" in file:
+        discover_path = import_dir + file
+    else:
+        customcash_path = import_dir + file
+
+prev = pd.read_csv("prev.csv")
+
 def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     # CustomCash Cleanup
     customcash = pd.read_csv(customcash_path)
     customcash["Date"] = pd.to_datetime(customcash["Date"]).dt.date
+    customcash = customcash[~(customcash["Description"].str.contains("THANK YOU"))]
     customcash["Debit"].fillna(customcash.Credit, inplace = True)
     customcash["Category"] = "Gas Stations"
     customcash["Tags"] = ""
@@ -52,31 +70,15 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
 
     return comb
 
-# Grabbing Files
-import_dir = "tmp/"
-reports_path = "reports/"
-downloads = os.listdir(import_dir)
+# Getting Previous
+main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
+main["Mine"] = ""
+main = main.append(prev)
+main["Date"] = main["Date"].astype(str)
+main.drop_duplicates(subset = ["Date", "Name", "Amount"], keep = False, ignore_index = True, inplace = True)
 
-for file in downloads:
-    if "4808" in file:
-        altitude_path = import_dir + file
-    elif "5100" in file:
-        cashplus_path = import_dir + file
-    elif "Discover" in file:
-        discover_path = import_dir + file
-    else:
-        customcash_path = import_dir + file
+print(main)
 
-#prev_comb_path = "combined.csv"
-#prev_comb = pd.read_csv(prev_comb_path)
+#main.to_csv("prev.csv", index = False)
 
-# unique
-#unique = comb.append(prev_comb)
-#unique["Date"] = pd.to_datetime(unique["Date"]).dt.date
-#unique.sort_values("Date", inplace = True)
-#unique = comb.drop_duplicates(subset = ["Date", "Amount"], keep = False)
-#unique.reset_index(drop = True, inplace = True)
-
-comb = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
-
-print(comb)
+# Magic Number: 50
