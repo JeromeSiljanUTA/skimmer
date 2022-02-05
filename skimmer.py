@@ -3,9 +3,9 @@ import pandas as pd
 import os
 import csv
 import datetime
-
 date_time = datetime.datetime.now()
 
+# Compiling and Cleaning Data
 # Grabbing Files
 import_dir = "tmp/"
 reports_path = "reports/"
@@ -76,9 +76,61 @@ main["Mine"] = ""
 main = main.append(prev)
 main["Date"] = main["Date"].astype(str)
 main.drop_duplicates(subset = ["Date", "Name", "Amount"], keep = False, ignore_index = True, inplace = True)
+main.fillna("", inplace = True)
 
-print(main)
+# Storing Data in Python Array
+main_arr = []
 
-#main.to_csv("prev.csv", index = False)
+for index, row in main.iterrows():
+  main_arr.append({
+          'Date':str(row['Date']),
+          'Name':str(row['Name']),
+          'Amount':str(row['Amount']),
+          'Category':str(row['Category']),
+          'Tags':str(row['Tags']),
+          'Card':str(row['Card']),
+          'Mine':str(row['Mine'])
+          })
 
-# Magic Number: 50
+from flask import Flask
+
+app = Flask(__name__)
+
+default_and_styles = "<style> table, th, td { border:1px solid black; } </style>"
+
+@app.route("/")
+def main():
+    page = default_and_styles
+    page += "<table>"
+    for item in main_arr:
+        page += "<tr>"
+        page += "<td>" + item["Date"] + "</td>"
+        page += "<td>" + item["Name"] + "</td>"
+        page += "<td>" + item["Amount"] + "</td>"
+        page += "<td>" + item["Category"] + "</td>"
+        page += "<td>" + item["Tags"] + "</td>"
+        page += "<td>" + item["Card"] + "</td>"
+        page += "<td>" + item["Mine"] + "</td>"
+        page += "</tr>"
+    page += "</table>"
+
+    print(page)
+
+    return page
+
+if __name__ == '__main__':
+    app.run()
+
+    """
+    page = "<h1>Finance Skimmer</h1>"
+
+    for item in main_arr:
+        page += item["Date"] + " "
+        page += item["Name"] + " "
+        page += item["Amount"] + " "
+        page += item["Category"] + " "
+        page += item["Tags"] + " "
+        page += item["Card"] + " "
+        page += item["Mine"] + " "
+        page += "<br>"
+    """
