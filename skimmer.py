@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import csv
 import datetime
+import sqlite3
 date_time = datetime.datetime.now()
 
 # Compiling and Cleaning Data
@@ -73,64 +74,37 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
 # Getting Previous
 main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
 main["Mine"] = ""
-main = main.append(prev)
-main["Date"] = main["Date"].astype(str)
-main.drop_duplicates(subset = ["Date", "Name", "Amount"], keep = False, ignore_index = True, inplace = True)
 main.fillna("", inplace = True)
+
+def row_to_string(row):
+    command = str(row['Date']) + '\t'
+    command += str(row['Name']) + '\t'
+    command += str(row['Amount']) + '\t'
+    command += str(row['Category']) + '\t'
+    command += str(row['Tags']) + '\t'
+    command += str(row['Card']) + '\t'
+    command += str(row['Mine'])
+    return command
 
 # Storing Data in Python Array
 main_arr = []
 
+connection = sqlite3.connect('main.db')
+cursor = connection.cursor()
+
+main.to_sql('main', connection, if_exists = 'append', index = False)
+
+cursor.execute('SELECT * FROM main;')
+
+ans = cursor.fetchall()
+
+connection.close()
+
+for row in ans:
+    print(row)
+
+"""
 for index, row in main.iterrows():
-  main_arr.append({
-          'Date':str(row['Date']),
-          'Name':str(row['Name']),
-          'Amount':str(row['Amount']),
-          'Category':str(row['Category']),
-          'Tags':str(row['Tags']),
-          'Card':str(row['Card']),
-          'Mine':str(row['Mine'])
-          })
-
-from flask import Flask
-
-app = Flask(__name__)
-
-default_and_styles = "<style> table, th, td { border:1px solid black; } </style>"
-
-@app.route("/")
-def main():
-    page = default_and_styles
-    page += "<table>"
-    for item in main_arr:
-        page += "<tr>"
-        page += "<td>" + item["Date"] + "</td>"
-        page += "<td>" + item["Name"] + "</td>"
-        page += "<td>" + item["Amount"] + "</td>"
-        page += "<td>" + item["Category"] + "</td>"
-        page += "<td>" + item["Tags"] + "</td>"
-        page += "<td>" + item["Card"] + "</td>"
-        page += "<td>" + item["Mine"] + "</td>"
-        page += "</tr>"
-    page += "</table>"
-
-    print(page)
-
-    return page
-
-if __name__ == '__main__':
-    app.run()
-
-    """
-    page = "<h1>Finance Skimmer</h1>"
-
-    for item in main_arr:
-        page += item["Date"] + " "
-        page += item["Name"] + " "
-        page += item["Amount"] + " "
-        page += item["Category"] + " "
-        page += item["Tags"] + " "
-        page += item["Card"] + " "
-        page += item["Mine"] + " "
-        page += "<br>"
-    """
+    #main_r.append({ 'Date':str(row['Date']), 'Name':str(row['Name']), 'Amount':str(row['Amount']), 'Category':str(row['Category']), 'Tags':str(row['Tags']), 'Card':str(row['Card']), 'Mine':str(row['Mine']) })
+    print(row_to_string(row))
+"""
