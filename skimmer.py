@@ -1,7 +1,7 @@
+# Set
 # Imports and Datetime
 import pandas as pd
 import os
-import csv
 import datetime
 import sqlite3
 date_time = datetime.datetime.now()
@@ -22,8 +22,6 @@ for file in downloads:
     else:
         customcash_path = import_dir + file
 
-prev = pd.read_csv("prev.csv")
-
 def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     # CustomCash Cleanup
     customcash = pd.read_csv(customcash_path)
@@ -31,7 +29,6 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     customcash = customcash[~(customcash["Description"].str.contains("THANK YOU"))]
     customcash["Debit"].fillna(customcash.Credit, inplace = True)
     customcash["Category"] = "Gas Stations"
-    customcash["Tags"] = ""
     customcash["Card"] = "Citi Custom Cash"
     customcash = (customcash.drop(columns = ["Credit", "Status"])
             .rename(columns = {"Description":"Name", "Debit":"Amount"})
@@ -43,7 +40,6 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     altitude = altitude[~(altitude["Name"].str.contains("THANK YOU"))]
     altitude["Amount"] = altitude["Amount"] * -1
     altitude["Category"] = "Restaurants"
-    altitude["Tags"] = ""
     altitude["Card"] = "USbank Altitude"
 
     # CashPlus Cleanup
@@ -52,7 +48,6 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     cashplus = cashplus[~(cashplus["Name"].str.contains("THANK YOU"))]
     cashplus["Amount"] = cashplus["Amount"] * -1
     cashplus["Category"] = ""
-    cashplus["Tags"] = ""
     cashplus["Card"] = "USbank CashPlus"
 
     # Discover Cleanup
@@ -61,7 +56,6 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
                 )
     discover["Date"] = pd.to_datetime(discover["Date"]).dt.date
     discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
-    altitude["Tags"] = ""
     discover["Card"] = "Discover It"
 
     # combine 
@@ -73,38 +67,26 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
 
 # Getting Previous
 main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
-main["Mine"] = ""
 main.fillna("", inplace = True)
 
-def row_to_string(row):
-    command = str(row['Date']) + '\t'
-    command += str(row['Name']) + '\t'
-    command += str(row['Amount']) + '\t'
-    command += str(row['Category']) + '\t'
-    command += str(row['Tags']) + '\t'
-    command += str(row['Card']) + '\t'
-    command += str(row['Mine'])
-    return command
-
-# Storing Data in Python Array
-main_arr = []
-
+# SQL Setup
 connection = sqlite3.connect('main.db')
 cursor = connection.cursor()
 
-main.to_sql('main', connection, if_exists = 'append', index = False)
+main.to_sql('new', connection, if_exists = 'replace', index = False)
 
-cursor.execute('SELECT * FROM main;')
+# Add Unique Values to main
+cursor.execute('INSERT INTO main(Date, Name, Amount, Category, Card) SELECT * FROM (SELECT Date, Name, Amount, Category, Card FROM main UNION ALL SELECT Date, Name, Amount, Category, Card FROM new) GROUP BY Date, Name, Amount, Category, Card HAVING COUNT(1) = 1;')
 
-ans = cursor.fetchall()
+# Display Values Without Tags
+cursor.execute('SELECT * FROM main WHERE ID!=(SELECT ID FROM info WHERE tags != "")');
+
+print('These entries don\'t have tags');
+tagless = cursor.fetchall()
+
+for entry in tagless:
+    print(entry[1], entry[2], entry[3], entry[4], entry[5])
+
+connection.commit()
 
 connection.close()
-
-for row in ans:
-    print(row)
-
-"""
-for index, row in main.iterrows():
-    #main_r.append({ 'Date':str(row['Date']), 'Name':str(row['Name']), 'Amount':str(row['Amount']), 'Category':str(row['Category']), 'Tags':str(row['Tags']), 'Card':str(row['Card']), 'Mine':str(row['Mine']) })
-    print(row_to_string(row))
-"""
