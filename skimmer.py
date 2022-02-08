@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import datetime
 import sqlite3
+from flask import Flask, render_template
 date_time = datetime.datetime.now()
 
 # Compiling and Cleaning Data
@@ -69,6 +70,7 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
 main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
 main.fillna("", inplace = True)
 
+# Insert New
 # SQL Setup
 connection = sqlite3.connect('main.db')
 cursor = connection.cursor()
@@ -78,15 +80,44 @@ main.to_sql('new', connection, if_exists = 'replace', index = False)
 # Add Unique Values to main
 cursor.execute('INSERT INTO main(Date, Name, Amount, Category, Card) SELECT * FROM (SELECT Date, Name, Amount, Category, Card FROM main UNION ALL SELECT Date, Name, Amount, Category, Card FROM new) GROUP BY Date, Name, Amount, Category, Card HAVING COUNT(1) = 1;')
 
-# Display Values Without Tags
-cursor.execute('SELECT * FROM main WHERE ID!=(SELECT ID FROM info WHERE tags != "")');
-
-print('These entries don\'t have tags');
-tagless = cursor.fetchall()
-
-for entry in tagless:
-    print(entry[1], entry[2], entry[3], entry[4], entry[5])
-
 connection.commit()
 
 connection.close()
+
+def find_tagless():
+    connection = sqlite3.connect('main.db')
+    cursor = connection.cursor()
+    cursor.execute('SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info WHERE tags != "")');
+    print('These entries don\'t have tags');
+    raw_tagless = cursor.fetchall()
+
+    tagless = []
+
+    for entry in raw_tagless:
+        tagless.append({"ID": str(entry[0]),
+                        "Date": str(entry[1]),
+                        "Name": str(entry[2]),
+                        "Amount": str(entry[3]),
+                        "Category": str(entry[4]),
+                        "Card": str(entry[5])})
+
+    connection.close()
+    return tagless
+
+# Flask Setup
+app = Flask(__name__, template_folder='web_testing')
+
+@app.route('/')
+def main_page():
+    tagless = find_tagless()
+    print(tagless)
+    return render_template('index.html', data=tagless)
+
+@app.route('/add_tag', methods = ['POST'])
+def add_tag():
+    input_text = request.form['uname']
+    print(uname)
+
+if __name__ == "__main__":
+    app.run()
+
