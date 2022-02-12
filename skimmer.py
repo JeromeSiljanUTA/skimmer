@@ -10,7 +10,6 @@ date_time = datetime.datetime.now()
 # Compiling and Cleaning Data
 # Grabbing Files
 import_dir = "tmp/"
-reports_path = "reports/"
 downloads = os.listdir(import_dir)
 
 for file in downloads:
@@ -84,11 +83,34 @@ connection.commit()
 
 connection.close()
 
+# Merchant Dictionary
+merchant_dict = {
+        "walmart":"Walmart",
+        "patel brothers":"Patel Brothers",
+        "amazon":"Amazon",
+        "jcpenney":"JCPenney",
+        "mcdonald":"McDonald's",
+        "buffalo wild wings":"Buffalo Wild Wings",
+        "family dollar":"Family Dollar",
+        "chick-fil-a":"Chick-fil-a",
+        "chickfil a":"Chick-fil-a",
+        "wendy's":"Wendy's",
+        "amzn":"Amazon",
+        "in n out":"In N Out",
+        "ihop":"IHOP",
+        "six flags":"Six Flags",
+        "panda":"Panda Express",
+        "waffle house":"Waffle House",
+        "starbucks":"Starbucks",
+        "walgreens":"Walgreens",
+        "wingstop":"Walgreens",
+        "fuzzy taco":"Fuzzy Taco Shop"
+}
+
 def find_tagless():
     connection = sqlite3.connect('main.db')
     cursor = connection.cursor()
-    cursor.execute('SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info WHERE tags != "")');
-    print('These entries don\'t have tags');
+    cursor.execute('SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info)');
     raw_tagless = cursor.fetchall()
 
     tagless = []
@@ -104,20 +126,48 @@ def find_tagless():
     connection.close()
     return tagless
 
-# Flask Setup
-app = Flask(__name__, template_folder='web_testing')
+def add_merchant(raw):
+    raw_lower = raw.lower()
+    for merchant in merchant_dict:
+        if(merchant in raw_lower):
+            return merchant_dict[merchant]
 
-@app.route('/')
-def main_page():
-    tagless = find_tagless()
-    print(tagless)
-    return render_template('index.html', data=tagless)
+    return raw
 
-@app.route('/add_tag', methods = ['POST'])
-def add_tag():
-    input_text = request.form['uname']
-    print(uname)
+def add_tags(tagless):
+    connection = sqlite3.connect('main.db')
+    cursor = connection.cursor()
 
-if __name__ == "__main__":
-    app.run()
+    for entry in tagless:
+        prompt = ('Was the purchase on ' + entry['Date'] 
+                + ' for ' + entry['Amount'] 
+                + ' called ' + entry['Name'] 
+                + ' yours? ')
+        mine = (input(prompt)).lower()
 
+        if(mine == 'yes' or mine == 'y'):
+            cleaned = add_merchant(entry['Name'])
+            if(cleaned != entry['Name']):
+                merchant = cleaned
+            else:
+                merchant = input('Enter merchant name: ')
+
+            notes = input('Enter notes: ')
+            tags = input('Enter tags: ')
+            cursor.execute('INSERT INTO info(ID, Merchant, Notes, Tags) VALUES(' + entry["ID"] + ', "' + merchant + '", "' + notes + '", "' + tags + '")')
+        elif(mine == 'c'):
+            """
+            cursor.execute('select Date, Name, Amount, Category, info.Tags, Card, Notes from main join info on main.ID = info.ID')
+            for row in cursor:
+                print(row)
+                """
+            connection.commit()
+        else:
+            cursor.execute('INSERT INTO info(ID, Tags) VALUES("' + entry['ID'] + '", "Mom")')
+
+
+    connection.commit()
+    connection.close()
+
+tagless = find_tagless()
+add_tags(tagless)
