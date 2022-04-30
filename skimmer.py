@@ -4,7 +4,6 @@ import pandas as pd
 import os
 import datetime
 import sqlite3
-from flask import Flask, render_template
 date_time = datetime.datetime.now()
 
 # Compiling and Cleaning Data
@@ -13,9 +12,11 @@ import_dir = "tmp/"
 downloads = os.listdir(import_dir)
 
 for file in downloads:
-    if "3978" in file:
+    if "4808" in file:
+    #if "3978" in file:
         altitude_path = import_dir + file
-    elif "4859" in file:
+    elif "5100" in file:
+    #elif "4859" in file:
         cashplus_path = import_dir + file
     elif "Discover" in file:
         discover_path = import_dir + file
@@ -71,13 +72,29 @@ main.fillna("", inplace = True)
 
 # Insert New
 # SQL Setup
-connection = sqlite3.connect('main.db')
+connection = sqlite3.connect('tester.db')
 cursor = connection.cursor()
 
-main.to_sql('new', connection, if_exists = 'replace', index = False)
+#main.to_sql('new', connection, if_exists = 'replace', index = False)
 
 # Add Unique Values to main
-cursor.execute('INSERT INTO main(Date, Name, Amount, Category, Card) SELECT * FROM (SELECT Date, Name, Amount, Category, Card FROM main UNION ALL SELECT Date, Name, Amount, Category, Card FROM new) GROUP BY Date, Name, Amount, Category, Card HAVING COUNT(1) = 1;')
+#cursor.execute('INSERT INTO main(Date, Name, Amount, Category, Card) SELECT * FROM (SELECT Date, Name, Amount, Category, Card FROM main UNION ALL SELECT Date, Name, Amount, Category, Card FROM new) GROUP BY Date, Name, Amount, Category, Card HAVING COUNT(1) = 1;')
+
+all_rows = main.iterrows()
+
+for row in all_rows:
+    row = row[1]
+    date = '"' + str(row[0]) + '", '
+    name = '"' + str(row[1]) + '", '
+    amount = '"' + str(row[2]) + '", '
+    category = '"' + str(row[3]) + '", '
+    card = '"' + str(row[4]) + '"'
+    #print('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
+    try:
+        cursor.execute('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
+    except sqlite3.IntegrityError:
+        #print(date + name + amount + category + card + ' is a duplicate entry')
+        print(name + ' is duplicate')
 
 connection.commit()
 
@@ -108,7 +125,7 @@ merchant_dict = {
 }
 
 def find_tagless():
-    connection = sqlite3.connect('main.db')
+    connection = sqlite3.connect('tester.db')
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info)');
     raw_tagless = cursor.fetchall()
@@ -135,7 +152,7 @@ def add_merchant(raw):
     return raw
 
 def add_tags(tagless):
-    connection = sqlite3.connect('main.db')
+    connection = sqlite3.connect('tester.db')
     cursor = connection.cursor()
 
     for entry in tagless:
@@ -171,3 +188,11 @@ def add_tags(tagless):
 
 tagless = find_tagless()
 add_tags(tagless)
+
+"""
+if((input('Would you like to generate reports? ').lower()) == 'yes' or 'y'):
+    os.system('gen_report.py')
+    print("Success: Reports generated!")
+else:
+    print("No reports generated")
+"""
