@@ -72,7 +72,7 @@ main.fillna("", inplace = True)
 
 # Insert New
 # SQL Setup
-connection = sqlite3.connect('tester.db')
+connection = sqlite3.connect('main.db')
 cursor = connection.cursor()
 
 #main.to_sql('new', connection, if_exists = 'replace', index = False)
@@ -93,8 +93,9 @@ for row in all_rows:
     try:
         cursor.execute('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
     except sqlite3.IntegrityError:
+        pass
         #print(date + name + amount + category + card + ' is a duplicate entry')
-        print(name + ' is duplicate')
+        #print(name + ' is duplicate')
 
 connection.commit()
 
@@ -121,11 +122,17 @@ merchant_dict = {
         "starbucks":"Starbucks",
         "walgreens":"Walgreens",
         "wingstop":"Walgreens",
-        "fuzzy taco":"Fuzzy Taco Shop"
+        "braums":"Braum's",
+        "hershey's palace":"Hershey's Palace",
+        "gyros house":"Gyros House",
+        "shipley do-nuts":"Shipley Do-Nuts",
+        "ebay":"eBay",
+        "fuzzy taco":"Fuzzy Taco Shop",
+        "torchys":"Torchy's Tacos"
 }
 
 def find_tagless():
-    connection = sqlite3.connect('tester.db')
+    connection = sqlite3.connect('main.db')
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info)');
     raw_tagless = cursor.fetchall()
@@ -152,7 +159,7 @@ def add_merchant(raw):
     return raw
 
 def add_tags(tagless):
-    connection = sqlite3.connect('tester.db')
+    connection = sqlite3.connect('main.db')
     cursor = connection.cursor()
 
     for entry in tagless:
@@ -189,10 +196,8 @@ def add_tags(tagless):
 tagless = find_tagless()
 add_tags(tagless)
 
-"""
 if((input('Would you like to generate reports? ').lower()) == 'yes' or 'y'):
-    os.system('gen_report.py')
+    os.system('python gen_report.py')
     print("Success: Reports generated!")
 else:
     print("No reports generated")
-"""
