@@ -8,19 +8,18 @@ import gen_report
 date_time = datetime.datetime.now()
 
 # Grabbing Files
-def get_files():
-    import_dir = "tmp/"
-    downloads = os.listdir(import_dir)
+import_dir = "tmp/"
+downloads = os.listdir(import_dir)
 
-    for file in downloads:
-        if "4808" in file:
-            altitude_path = import_dir + file
-        elif "5100" in file:
-            cashplus_path = import_dir + file
-        elif "Discover" in file:
-            discover_path = import_dir + file
-        else:
-            customcash_path = import_dir + file
+for file in downloads:
+    if "4808" in file:
+        altitude_path = import_dir + file
+    elif "5100" in file:
+        cashplus_path = import_dir + file
+    elif "Discover" in file:
+        discover_path = import_dir + file
+    else:
+        customcash_path = import_dir + file
 
 def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     # CustomCash Cleanup
@@ -123,7 +122,10 @@ def add_tags(tagless):
     connection.close()
 
 # Getting Previous
+#paths = get_files()
+#main = cleanup(paths[0], paths[1], paths[2], paths[3])
 main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
+"""
 main.fillna("", inplace = True)
 
 # Insert New
@@ -146,8 +148,8 @@ for row in all_rows:
         pass
 
 connection.commit()
-
 connection.close()
+"""
 
 # Merchant Dictionary
 merchant_dict = {
@@ -179,9 +181,7 @@ merchant_dict = {
         "torchys":"Torchy's Tacos"
 }
 
-
-tagless = find_tagless()
-add_tags(tagless)
+add_tags(find_tagless())
 
 if((input('Would you like to generate reports? ').lower()) == 'yes' or 'y'):
     gen_report.generate()
