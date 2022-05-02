@@ -4,7 +4,6 @@ import pandas as pd
 import os
 import datetime
 import sqlite3
-import gen_report
 date_time = datetime.datetime.now()
 
 # Grabbing Files
@@ -185,15 +184,3 @@ def insert_new(paths):
 
     connection.commit()
     connection.close()
-
-paths = get_files()
-insert_new(paths)
-add_tags(find_tagless())
-
-"""
-if((input('Would you like to generate reports? ').lower()) == 'yes' or 'y'):
-    gen_report.generate()
-    print("Success: Reports generated!")
-else:
-    print("No reports generated")
-"""
