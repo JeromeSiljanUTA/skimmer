@@ -93,6 +93,36 @@ def find_tagless():
     return tagless
 
 def add_merchant(raw):
+
+# Merchant Dictionary
+    merchant_dict = {
+            "walmart":"Walmart",
+            "patel brothers":"Patel Brothers",
+            "amazon":"Amazon",
+            "jcpenney":"JCPenney",
+            "mcdonald":"McDonald's",
+            "buffalo wild wings":"Buffalo Wild Wings",
+            "family dollar":"Family Dollar",
+            "chick-fil-a":"Chick-fil-a",
+            "chickfil a":"Chick-fil-a",
+            "wendy's":"Wendy's",
+            "amzn":"Amazon",
+            "in n out":"In N Out",
+            "ihop":"IHOP",
+            "six flags":"Six Flags",
+            "panda":"Panda Express",
+            "waffle house":"Waffle House",
+            "starbucks":"Starbucks",
+            "walgreens":"Walgreens",
+            "wingstop":"Walgreens",
+            "braums":"Braum's",
+            "hershey's palace":"Hershey's Palace",
+            "gyros house":"Gyros House",
+            "shipley do-nuts":"Shipley Do-Nuts",
+            "ebay":"eBay",
+            "fuzzy taco":"Fuzzy Taco Shop",
+            "torchys":"Torchy's Tacos"
+    }
     raw_lower = raw.lower()
     for merchant in merchant_dict:
         if(merchant in raw_lower):
@@ -130,70 +160,40 @@ def add_tags(tagless):
     connection.commit()
     connection.close()
 
-# Getting Previous
+def insert_new(paths):
+    main = cleanup(paths[3], paths[0], paths[1], paths[2])
+
+    main.fillna("", inplace = True)
+
+    # SQL Setup
+    connection = sqlite3.connect('main.db')
+    cursor = connection.cursor()
+
+    all_rows = main.iterrows()
+
+    for row in all_rows:
+        row = row[1]
+        date = '"' + str(row[0]) + '", '
+        name = '"' + str(row[1]) + '", '
+        amount = '"' + str(row[2]) + '", '
+        category = '"' + str(row[3]) + '", '
+        card = '"' + str(row[4]) + '"'
+        try:
+            cursor.execute('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
+        except sqlite3.IntegrityError:
+            pass
+
+    connection.commit()
+    connection.close()
+
 paths = get_files()
-main = cleanup(paths[3], paths[0], paths[1], paths[2])
-#main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
-"""
-main.fillna("", inplace = True)
-
-# Insert New
-# SQL Setup
-connection = sqlite3.connect('main.db')
-cursor = connection.cursor()
-
-all_rows = main.iterrows()
-
-for row in all_rows:
-    row = row[1]
-    date = '"' + str(row[0]) + '", '
-    name = '"' + str(row[1]) + '", '
-    amount = '"' + str(row[2]) + '", '
-    category = '"' + str(row[3]) + '", '
-    card = '"' + str(row[4]) + '"'
-    try:
-        cursor.execute('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
-    except sqlite3.IntegrityError:
-        pass
-
-connection.commit()
-connection.close()
-"""
-
-# Merchant Dictionary
-merchant_dict = {
-        "walmart":"Walmart",
-        "patel brothers":"Patel Brothers",
-        "amazon":"Amazon",
-        "jcpenney":"JCPenney",
-        "mcdonald":"McDonald's",
-        "buffalo wild wings":"Buffalo Wild Wings",
-        "family dollar":"Family Dollar",
-        "chick-fil-a":"Chick-fil-a",
-        "chickfil a":"Chick-fil-a",
-        "wendy's":"Wendy's",
-        "amzn":"Amazon",
-        "in n out":"In N Out",
-        "ihop":"IHOP",
-        "six flags":"Six Flags",
-        "panda":"Panda Express",
-        "waffle house":"Waffle House",
-        "starbucks":"Starbucks",
-        "walgreens":"Walgreens",
-        "wingstop":"Walgreens",
-        "braums":"Braum's",
-        "hershey's palace":"Hershey's Palace",
-        "gyros house":"Gyros House",
-        "shipley do-nuts":"Shipley Do-Nuts",
-        "ebay":"eBay",
-        "fuzzy taco":"Fuzzy Taco Shop",
-        "torchys":"Torchy's Tacos"
-}
-
+insert_new(paths)
 add_tags(find_tagless())
 
+"""
 if((input('Would you like to generate reports? ').lower()) == 'yes' or 'y'):
     gen_report.generate()
     print("Success: Reports generated!")
 else:
     print("No reports generated")
+"""
