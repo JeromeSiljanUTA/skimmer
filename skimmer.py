@@ -8,18 +8,27 @@ import gen_report
 date_time = datetime.datetime.now()
 
 # Grabbing Files
-import_dir = "tmp/"
-downloads = os.listdir(import_dir)
+def get_files():
+    import_dir = "tmp/"
+    downloads = os.listdir(import_dir)
 
-for file in downloads:
-    if "4808" in file:
-        altitude_path = import_dir + file
-    elif "5100" in file:
-        cashplus_path = import_dir + file
-    elif "Discover" in file:
-        discover_path = import_dir + file
-    else:
-        customcash_path = import_dir + file
+    paths = ["", "", "", ""]
+
+    for file in downloads:
+        if "4808" in file:
+            altitude_path = import_dir + file
+            paths[0] = altitude_path
+        elif "5100" in file:
+            cashplus_path = import_dir + file
+            paths[1] = cashplus_path
+        elif "Discover" in file:
+            discover_path = import_dir + file
+            paths[2] = discover_path
+        else:
+            customcash_path = import_dir + file
+            paths[3] = customcash_path
+
+    return paths
 
 def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     # CustomCash Cleanup
@@ -122,9 +131,9 @@ def add_tags(tagless):
     connection.close()
 
 # Getting Previous
-#paths = get_files()
-#main = cleanup(paths[0], paths[1], paths[2], paths[3])
-main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
+paths = get_files()
+main = cleanup(paths[3], paths[0], paths[1], paths[2])
+#main = cleanup(customcash_path, altitude_path, cashplus_path, discover_path)
 """
 main.fillna("", inplace = True)
 
