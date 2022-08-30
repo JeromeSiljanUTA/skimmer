@@ -11,6 +11,5 @@ This script pulls data from csv files downloaded from my credit cards' websites 
  - Run with `python skimmer.py`
  - Data stored in 'main.db'
 
-
 ## Initial Purpose
 I needed to make a script that would parse through and sort my credit card statements. I use credit cards from different companies, so the data is formatted differently. My mother has been kind enough to let me put some of her expenses on my cards so I can get cashback on them. So long as I send her itemized reports at the end of each month, she pays me back. This program helps me separate our transactions.
