@@ -11,7 +11,7 @@ def get_files():
     import_dir = "tmp/"
     downloads = os.listdir(import_dir)
 
-    paths = ["", "", "", ""]
+    paths = ["", "", "", "", ""]
 
     for file in downloads:
         if "4808" in file:
@@ -23,13 +23,16 @@ def get_files():
         elif "Discover" in file:
             discover_path = import_dir + file
             paths[2] = discover_path
+        elif "wf" in file:
+            wf_path = import_dir + file
+            paths[4] = wf_path
         else:
             customcash_path = import_dir + file
             paths[3] = customcash_path
 
     return paths
 
-def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
+def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_path):
     # CustomCash Cleanup
     customcash = pd.read_csv(customcash_path)
     customcash["Date"] = pd.to_datetime(customcash["Date"]).dt.date
@@ -40,6 +43,7 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     customcash = (customcash.drop(columns = ["Credit", "Status"])
             .rename(columns = {"Description":"Name", "Debit":"Amount"})
          )
+    customcash = customcash[~(customcash["Name"].str.contains("AUTOPAY"))]
 
     # Altitude Cleanup
     altitude = pd.read_csv(altitude_path, usecols = ["Amount", "Name", "Date"])
@@ -65,8 +69,18 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path):
     discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
     discover["Card"] = "Discover It"
 
+    # Wells Fargo Cleanup
+    wf = (pd.read_csv(wf_path, header=None, usecols = [0, 1, 4])
+            .rename(columns = {0:"Date", 4:"Name", 1:"Amount"})
+         )
+    wf["Amount"] = wf["Amount"] * -1
+    wf["Date"] = pd.to_datetime(wf["Date"]).dt.date
+    wf["Category"] = ""
+    wf["Card"] = "Active Cash"
+    wf = wf[["Date", "Name", "Amount", "Category", "Card"] ]
+
     # combine 
-    comb = altitude.append(cashplus).append(discover).append(customcash)
+    comb = altitude.append(cashplus).append(discover).append(customcash).append(wf)
     comb.sort_values("Date", inplace = True)
     comb.reset_index(drop = True, inplace = True)
 
@@ -160,7 +174,7 @@ def add_tags(tagless):
     connection.close()
 
 def insert_new(paths):
-    main = cleanup(paths[3], paths[0], paths[1], paths[2])
+    main = cleanup(paths[3], paths[0], paths[1], paths[2], paths[4])
 
     main.fillna("", inplace = True)
 
