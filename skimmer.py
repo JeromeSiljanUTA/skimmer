@@ -179,21 +179,17 @@ def insert_new(paths):
 
     main.fillna("", inplace = True)
 
-    # SQL Setup
     connection = sqlite3.connect('main.db')
     cursor = connection.cursor()
 
     all_rows = main.iterrows()
 
-    for row in all_rows:
-        row = row[1]
-        date = '"' + str(row[0]) + '", '
-        name = '"' + str(row[1]) + '", '
-        amount = '"' + str(row[2]) + '", '
-        category = '"' + str(row[3]) + '", '
-        card = '"' + str(row[4]) + '"'
+    for row in [row[1] for row in all_rows]:        # ignore index of dataframe
+        cmd = f'INSERT INTO main(Date, Name, Amount, Category, Card) VALUES ("{row[0]}", "{row[1]}", "{row[2]}", "{row[3]}", "{row[4]}");'
+        print(cmd)
+        break
         try:
-            cursor.execute('INSERT INTO main(Date, Name, Amount, CAtegory, Card) VALUES (' + date + name + amount + category + card + ');')
+            cursor.execute(cmd)
         except sqlite3.IntegrityError:
             pass
 
