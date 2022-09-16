@@ -77,6 +77,7 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
     wf["Date"] = pd.to_datetime(wf["Date"]).dt.date
     wf["Category"] = ""
     wf["Card"] = "Active Cash"
+    wf = wf[~(wf["Name"].str.contains("ONLINE PAYMENT"))]
     wf = wf[["Date", "Name", "Amount", "Category", "Card"] ]
 
     # combine 
