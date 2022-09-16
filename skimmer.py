@@ -149,10 +149,7 @@ def add_tags(tagless):
     cursor = connection.cursor()
 
     for entry in tagless:
-        prompt = ('Was the purchase on ' + entry['Date'] 
-                + ' for ' + entry['Amount'] 
-                + ' called ' + entry['Name'] 
-                + ' yours? ')
+        prompt = (f'Was the purchase on {entry["Date"]} for {entry["Amount"]} called {entry["Name"]} yours? ')
         mine = (input(prompt)).lower()
 
         if(mine == 'yes' or mine == 'y'):
@@ -164,11 +161,11 @@ def add_tags(tagless):
 
             notes = input('Enter notes: ')
             tags = input('Enter tags: ')
-            cursor.execute('INSERT INTO info(ID, Merchant, Notes, Tags) VALUES(' + entry["ID"] + ', "' + merchant + '", "' + notes + '", "' + tags + '")')
+            cursor.execute(f'INSERT INTO info(ID, Merchant, Notes, Tags) VALUES("{entry["ID"]}", "{merchant}", "{notes}", "{tags}")')
         elif(mine == 'c'):
             connection.commit()
         else:
-            cursor.execute('INSERT INTO info(ID, Tags) VALUES("' + entry['ID'] + '", "Mom")')
+            cursor.execute(f'INSERT INTO info(ID, Tags) VALUES("{entry["ID"]}", "Mom")')
 
 
     connection.commit()
