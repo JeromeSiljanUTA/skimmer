@@ -4,8 +4,13 @@ import pandas as pd
 import os
 import datetime
 import sqlite3
+import yaml
 
 date_time = datetime.datetime.now()
+
+# Read config
+with open("config.yml", "r") as config_file:
+    config = yaml.safe_load(config_file)
 
 
 # Grabbing Files
@@ -83,7 +88,8 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
     wf = wf[["Date", "Name", "Amount", "Category", "Card"]]
 
     # combine
-    comb = altitude.append(cashplus).append(discover).append(customcash).append(wf)
+    # comb = altitude.append(cashplus).append(discover).append(customcash).append(wf)
+    comb = pd.concat([altitude, cashplus, discover, customcash, wf])
     comb.sort_values("Date", inplace=True)
     comb.reset_index(drop=True, inplace=True)
 
@@ -93,7 +99,24 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
 def find_tagless():
     connection = sqlite3.connect("main.db")
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info)")
+    # cursor.execute("SELECT * FROM main WHERE ID NOT IN (SELECT ID FROM info)")
+    start_date = config["start_date"]
+    cursor.execute(
+        f"""
+        SELECT
+          *
+        FROM
+          main
+        WHERE
+          ID NOT IN (
+          SELECT
+            ID
+          FROM
+          info
+          )
+          AND date(Date) > date('{start_date}')
+"""
+    )
     raw_tagless = cursor.fetchall()
 
     tagless = []
@@ -232,3 +255,27 @@ def insert_new(paths):
 
     connection.commit()
     connection.close()
+
+
+def init_db():
+    connection = sqlite3.connect("main.db")
+    cursor = connection.cursor()
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS info(
+     ID INTEGER,
+     Merchant TEXT,
+     Notes TEXT,
+     Tags TEXT,
+     FOREIGN KEY(ID) REFERENCES main(ID));"""
+    )
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS main (
+    ID integer PRIMARY KEY,
+    Date TEXT,
+    Name TEXT,
+    Amount REAL,
+    Category TEXT,
+    Card TEXT,
+    UNIQUE(Date, Name, Amount, Category, Card));
+    """
+    )
