@@ -2,6 +2,7 @@
 import pandas as pd
 import sqlite3
 import openpyxl
+import os
 
 
 def generate():
@@ -24,6 +25,9 @@ def generate():
         ["11", "November"],
         ["12", "December"],
     ]
+
+    if not os.path.isdir("reports/"):
+        os.mkdir("reports")
 
     with pd.ExcelWriter("reports/2023 Report.xlsx") as writer:
         for month in range(12):
