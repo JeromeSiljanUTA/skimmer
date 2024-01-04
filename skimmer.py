@@ -51,12 +51,12 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
     customcash = customcash.drop(columns=["Credit", "Status"]).rename(
         columns={"Description": "Name", "Debit": "Amount"}
     )
-    customcash = customcash[~(customcash["Name"].str.contains("AUTOPAY"))]
+    # customcash = customcash[~(customcash["Name"].str.contains("AUTOPAY"))]
 
     # Altitude Cleanup
     altitude = pd.read_csv(altitude_path, usecols=["Amount", "Name", "Date"])
     altitude["Date"] = pd.to_datetime(altitude["Date"]).dt.date
-    altitude = altitude[~(altitude["Name"].str.contains("THANK YOU"))]
+    # altitude = altitude[~(altitude["Name"].str.contains("THANK YOU"))]
     altitude["Amount"] = altitude["Amount"] * -1
     altitude["Category"] = "Restaurants"
     altitude["Card"] = "USbank Altitude"
@@ -64,7 +64,7 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
     # CashPlus Cleanup
     cashplus = pd.read_csv(cashplus_path, usecols=["Amount", "Name", "Date"])
     cashplus["Date"] = pd.to_datetime(cashplus["Date"]).dt.date
-    cashplus = cashplus[~(cashplus["Name"].str.contains("THANK YOU"))]
+    # cashplus = cashplus[~(cashplus["Name"].str.contains("THANK YOU"))]
     cashplus["Amount"] = cashplus["Amount"] * -1
     cashplus["Category"] = ""
     cashplus["Card"] = "USbank CashPlus"
@@ -74,7 +74,7 @@ def cleanup(customcash_path, altitude_path, cashplus_path, discover_path, wf_pat
         discover_path, usecols=["Trans. Date", "Amount", "Description", "Category"]
     ).rename(columns={"Trans. Date": "Date", "Description": "Name"})
     discover["Date"] = pd.to_datetime(discover["Date"]).dt.date
-    discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
+    # discover = discover[~(discover["Name"].str.contains("THANK YOU"))]
     discover["Card"] = "Discover It"
 
     # Wells Fargo Cleanup
